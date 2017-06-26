@@ -3,6 +3,11 @@
  * @author Yevgeny Shemchik (schemtschik@gmail.com)
  */
 
+/*
+ * Суммирует все баллы за правильные ответы в соответствии с разбалловкой
+ * Для каждой пары "команда-вопрос" учитывает все записи
+ */
+
 $calculate = function($answers, $quiz) {
     $res = array();
     for ($questionId = 0; $questionId < count($answers); $questionId++) {

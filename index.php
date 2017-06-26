@@ -43,7 +43,7 @@
                   <li id="competitionsItem"><a href="#competitions" onclick="setPage('competitions')">Соревнования</a></li>
                   <li id="quizzesItem"><a href="#quizzes" onclick="setPage('quizzes')">Блоки</a></li>
                   <li id="questionsItem"><a href="#questions" onclick="setPage('questions')">Вопросы</a></li>
-                  <li id="runItem"><a href="#run" onclick="setPage('run'); selectCompetition(0);">Запуск</a></li>
+                  <li id="runItem"><a href="#run" onclick="setPage('run');">Запуск</a></li>
                   <li id="tableItem"><a href="#table" onclick="setPage('table')">Таблица</a></li>
                   <li id="playersItem"><a href="#players" onclick="setPage('players')">Игроки</a></li>
               </ul>
@@ -52,14 +52,13 @@
                   <div type="submit" class="btn btn-default" onclick="loadAndDraw()">Перезагрузить всё</div>
                   <div type="submit" class="btn btn-default" onclick='document.cookie = "password=; expires=-1"; location.href = "login.php";'>Выйти</div>
               </form>
-              <ul id="savedLabel" class="nav navbar-nav" hidden>
-                  <li><a href="#">Сохранено</a></li>
-              </ul>
           </div>
       </div>
   </nav>
 
   <br><br>
+
+  <div class="container" id="alertMessage" hidden></div>
 
   <div class="container" id="competitions">
       <div class="row">
@@ -111,7 +110,7 @@
                                                   <div class="form-group">
                                                       <label for="teamName" class="col-lg-2 control-label">Название</label>
                                                       <div class="col-lg-10">
-                                                          <input type="text" class="form-control" id="teamName" placeholder="Team Name" onchange='data.competitions[selectedCompetition].teams[selectedTeam].name = $("#teamName").val()'>
+                                                          <input type="text" class="form-control" id="teamName" placeholder="Team Name" onkeypress="focusOnFilter(event)" onchange='data.competitions[selectedCompetition].teams[selectedTeam].name = $("#teamName").val()'>
                                                       </div>
                                                   </div>
                                                   <div class="form-group">
@@ -121,9 +120,10 @@
                                                       </div>
                                                   </div>
                                                   <div class="form-group">
-                                                      <label class="col-lg-2 control-label">Добавить участника</label>
+                                                      <label class="col-lg-2 control-label">Добавить участника (начните вводить фамилию)</label>
                                                       <div class="col-lg-10">
-                                                          <select multiple="" class="form-control" id="newMembersList" onchange="addPlayerToTeam()"></select>
+                                                          <input multiple="" class="form-control" id="playersFilter" onkeypress="filterPlayers()">
+                                                          <select multiple="" class="form-control" id="newMembersList" onchange="addPlayerToTeam(); $('#playersFilter').focus()"></select>
                                                       </div>
                                                   </div>
                                               </fieldset>
@@ -226,9 +226,9 @@
                                   </div>
                               </div>
                               <div class="form-group" id="questionTimeBlock">
-                                  <label for="questionTime" class="col-lg-2 control-label">Границы проигрыша</label>
+                                  <label for="questionTime" class="col-lg-2 control-label">Границы проигрыша (в секундах)</label>
                                   <div class="col-lg-10">
-                                      <input type="text" class="form-control" id="questionTime" placeholder="00:00-00:10" onchange='data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].music_time = $("#questionTime").val(); updateTest();'>
+                                      <input type="text" class="form-control" id="questionTime" placeholder="5.5-10" onchange='data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].music_time = $("#questionTime").val(); updateTest();'>
                                   </div>
                               </div>
                               <div class="form-group" id="questionTestBlock">
@@ -342,7 +342,7 @@
                   <div class="bs-component">
                       <div class="panel panel-primary" id="questionPanel">
                           <div class="panel-heading">
-                              <h1 class="panel-title">Вопрос (<a onclick="$('#questionPanel').hide()">Скрыть</a>)</h1>
+                              <h1 class="panel-title">Вопрос (<a onclick="$('#questionPanel').hide(); $('#answersPanel').show();">Переключиться на запись ответов</a>)</h1>
                           </div>
                           <div class="panel-body">
                               <h2 id="runQuestionText"></h2>
@@ -351,9 +351,9 @@
                               <div class="col-lg-10" id="runPhoto"></div>
                           </div>
                       </div>
-                      <div class="panel panel-primary" id="answersPanel">
+                      <div class="panel panel-primary" id="answersPanel" hidden>
                           <div class="panel-heading">
-                              <h1 class="panel-title">Запись ответов (<a onclick="$('#answersPanel').hide()">Скрыть</a>)</h1>
+                              <h1 class="panel-title">Запись ответов (<a onclick="$('#answersPanel').hide(); $('#questionPanel').show();">Переключиться на показ вопросов</a>)</h1>
                           </div>
                           <div class="panel-body">
                               <div class="row">

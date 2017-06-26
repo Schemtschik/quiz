@@ -182,11 +182,13 @@ function getTable() {
     die(json_encode($res));
 }
 
+$publicMethods = array("get", "save", "delete", "getFiles", "getValuers", "addAnswer", "getResults", "getTable");
+
 if (isset($_GET['q'])) {
     $q = $_GET['q'];
 
     try {
-        if (function_exists($q))
+        if (in_array($q, $publicMethods) && function_exists($q))
             $q();
         else
             throw new Exception('Unknown method');

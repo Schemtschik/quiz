@@ -28,9 +28,9 @@ function saveAll() {
     $.getJSON("api/action.php?q=save&data=" + $.toJSON(data), function (_data) {
         if (_data != "error") {
             loadAndDraw();
-            alert("Saved");
+            innerAlert("Сохранено");
         } else {
-            alert("Ошибка: " + _data.message);
+            innerAlert("Ошибка: ", _data.message, "danger");
         }
     });
 }
@@ -39,9 +39,9 @@ function saveCompetition(num) {
     $.getJSON("api/action.php?q=save&competition=" + num + "&data=" + $.toJSON(data), function (_data) {
         if (_data != "error") {
             loadAndDraw();
-            alert("Saved");
+            innerAlert("Сохранено");
         } else {
-            alert("Ошибка: " + _data.message);
+            innerAlert("Ошибка: ", _data.message, "danger");
         }
     });
 }
@@ -50,9 +50,9 @@ function saveQuiz(num) {
     $.getJSON("api/action.php?q=save&competition=" + selectedCompetition + "&quiz=" + num + "&data=" + $.toJSON(data), function (_data) {
         if (_data != "error") {
             loadAndDraw();
-            alert("Saved");
+            innerAlert("Сохранено");
         } else {
-            alert("Ошибка: " + _data.message);
+            innerAlert("Ошибка: ", _data.message, "danger");
         }
     });
 }
@@ -61,9 +61,9 @@ function saveQuestion(num) {
     $.getJSON("api/action.php?q=save&competition=" + selectedCompetition + "&quiz=" + selectedQuiz + "&question=" + num + "&data=" + $.toJSON(data), function (_data) {
         if (_data != "error") {
             loadAndDraw();
-            alert("Saved");
+            innerAlert("Сохранено");
         } else {
-            alert("Ошибка: " + _data.message);
+            innerAlert("Ошибка: ", _data.message, "danger");
         }
     });
 }
@@ -116,9 +116,9 @@ function deleteCompetition(id) {
         if (_data != "error") {
             loadAndDraw();
             selectCompetition(0);
-            alert("Удалено");
+            innerAlert("Соревнование удалено");
         } else {
-            alert("Ошибка: " + _data.message);
+            innerAlert("Ошибка: ", _data.message, "danger");
         }
     });
 }
@@ -216,21 +216,25 @@ function deletePlayer(num) {
 }
 
 function updateTest() {
-    if (data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].photo != "")
-        $("#photoTest").html("<img src='data/competitions/" + data.competitions[selectedCompetition].id + "/media/" + data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].photo + "' width='200px'>")
+    var time = data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].music_time;
+    if (time != null && time != '')
+        var timing = '#t=' + time.replace("-", ",");
     else
-        $("#photoTest").html("");
-
-    if (data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].music_time != null && data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].music_time != "")
-        var time = data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].music_time;
-    else
-        var time = "00:00-00:00";
+        var timing = '';
     var musicLink = "data/competitions/" + data.competitions[selectedCompetition].id + "/media/" + data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].music;
-    var timeBegin = Number(time.split("-")[0].split(":")[0]) * 60 + Number(time.split("-")[0].split(":")[1]);
-    var timeEnd = Number(time.split("-")[1].split(":")[0]) * 60 + Number(time.split("-")[1].split(":")[1]);
-    var timing = '#t=' + timeBegin + ',' + timeEnd;
-    $("#questionTest").html('');
-    $("#questionTest").html('<audio src="' + musicLink + timing + '" controls></audio>');
+    $("#questionTest").html('<audio volume=0 onplay="onPlay()" src="' + musicLink + timing + '" controls id="mAudio1"></audio>');
+    if (data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].music != null && data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].music != "")
+        $("#runMusic").html('<audio volume=0  onplay="onPlay()" src="' + musicLink + timing + '" controls id="mAudio2"></audio>');
+    else
+        $("#runMusic").html('');
+
+    if (data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].photo != "") {
+        $("#photoTest").html("<img src='data/competitions/" + data.competitions[selectedCompetition].id + "/media/" + data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].photo + "' width='200px'>")
+        $("#runPhoto").html("<img src='data/competitions/" + data.competitions[selectedCompetition].id + "/media/" + data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].photo + "' width='100%'>")
+    } else {
+        $("#photoTest").html("");
+        $("#runPhoto").html("");
+    }
 }
 
 function next() {
@@ -293,7 +297,7 @@ function sendAnswer(event) {
         if (_data != "error") {
             drawResults();
         } else {
-            alert("Ошибка: " + _data.message);
+            innerAlert("Ошибка: ", _data.message, "danger");
         }
     });
 
@@ -357,7 +361,7 @@ function drawResults() {
                 text += "</tbody>";
                 $("#resultsTable").html(text);
             } else {
-                alert("Ошибка: " + _data.message);
+                innerAlert("Ошибка: ", _data.message, "danger");
             }
         });
     }
@@ -459,6 +463,18 @@ function draw() {
         $("#quizzName").val(data.competitions[selectedCompetition].quizzes[selectedQuiz].name);
         $("#quizzTitle").val(data.competitions[selectedCompetition].quizzes[selectedQuiz].title);
 
+        $.getJSON("api/action.php?q=getValuers", function (_data) {
+            if (_data.status == "ok") {
+                var text = "";
+                for (var i = 0; i < _data.valuers.length; i++)
+                    text += "<option>" + _data.valuers[i] + "</option>";
+                $("#quizValuer").html(text);
+                $("#quizValuer").val(data.competitions[selectedCompetition].quizzes[selectedQuiz].valuer);
+            } else {
+                innerAlert("Ошибка: ", _data.message, "danger");
+            }
+        });
+
         if (selectedQuestion < data.competitions[selectedCompetition].quizzes[selectedQuiz].questions.length) {
             var text = "";
             for (var i = 0; i < data.competitions[selectedCompetition].quizzes[selectedQuiz].questions.length; i++)
@@ -474,39 +490,37 @@ function draw() {
             $("#questionTime").val(data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].music_time);
             $("#questionMusic").val(data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].music);
             $("#questionPhoto").val(data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].photo);
-            if (data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].music_time != null && data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].music_time != "")
-                var time = data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].music_time;
-            else
-                var time = "00:00-00:00";
-            var musicLink = "data/competitions/" + data.competitions[selectedCompetition].id + "/media/" + data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].music;
-            var timeBegin = Number(time.split("-")[0].split(":")[0]) * 60 + Number(time.split("-")[0].split(":")[1]);
-            var timeEnd = Number(time.split("-")[1].split(":")[0]) * 60 + Number(time.split("-")[1].split(":")[1]);
-            var timing = '#t=' + timeBegin + ',' + timeEnd;
-            $("#questionTest").html('<audio src="' + musicLink + timing + '" controls></audio>');
-            if (data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].music_time != null && data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].music_time != "")
-                $("#runMusic").html('<audio src="' + musicLink + timing + '" controls></audio>');
-            else
-                $("#runMusic").html('');
 
-            if (data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].photo != "") {
-                $("#photoTest").html("<img src='data/competitions/" + data.competitions[selectedCompetition].id + "/media/" + data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].photo + "' width='200px'>")
-                $("#runPhoto").html("<img src='data/competitions/" + data.competitions[selectedCompetition].id + "/media/" + data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].photo + "' width='100%'>")
-            } else {
-                $("#photoTest").html("");
-                $("#runPhoto").html("");
-            }
+            updateTest();
 
-
+            var text = "Подзадачи: ";
+            for (var i = 0; i < data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].scores.length; i++)
+                text += ' ' + data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].scores[i].title + '<span class="badge">' + data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].scores[i].score + '</span>';
+            $("#subtasksList").html(text);
 
             var scoresList = "";
             for (var i = 0; i < data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].scores.length; i++) {
                 var score = data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].scores[i];
-                scoresList += '<li style="cursor: pointer" class="list-group-item ' + (i == selectedScore ? "active" : "") + '" onclick="selectScore(' + i + ')"><span class="badge">' + score.score + '</span>' + score.title + ' (<a onclick="deleteScore(' + i + ')">Удалить</a>)</li>';
+                scoresList += '<li style="cursor: pointer" class="list-group-item ' + (i == selectedScore ? "active" : "") + '" onclick="selectScore(' + i + ')"><span class="badge">' + score.score + '</span>' + score.title + ' <a class="btn btn-sm btn-danger" onclick="deleteScore(' + i + ')">Удалить</a></li>';
             }
             $("#scoresList").html(scoresList);
 
             $("#scoreTitle").val(data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].scores[selectedScore].title);
             $("#scorePoints").val(data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].scores[selectedScore].score);
+
+            $.getJSON("api/action.php?q=getFiles&competition=" + data.competitions[selectedCompetition].id, function (_data) {
+                if (_data.status == "ok") {
+                    var text = "<option></option>";
+                    for (var i = 0; i < _data.files.length; i++)
+                        text += "<option>" + _data.files[i] + "</option>";
+                    $("#questionMusic").html(text);
+                    $("#questionPhoto").html(text);
+                    $("#questionMusic").val(data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].music);
+                    $("#questionPhoto").val(data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].photo);
+                } else {
+                    innerAlert("Ошибка: ", _data.message, "danger");
+                }
+            });
         }
     }
 
@@ -526,36 +540,25 @@ function draw() {
     }
     $("#playersList").html(text);
 
-    var text = "Подзадачи: ";
-    for (var i = 0; i < data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].scores.length; i++)
-        text += ' ' + data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].scores[i].title + '<span class="badge">' + data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].scores[i].score + '</span>';
-    $("#subtasksList").html(text);
-
-    $.getJSON("api/action.php?q=getFiles&competition=" + data.competitions[selectedCompetition].id, function (_data) {
-        if (_data.status == "ok") {
-            var text = "<option></option>";
-            for (var i = 0; i < _data.files.length; i++)
-                text += "<option>" + _data.files[i] + "</option>";
-            $("#questionMusic").html(text);
-            $("#questionPhoto").html(text);
-            $("#questionMusic").val(data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].music);
-            $("#questionPhoto").val(data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].photo);
+    var pages = ["#players", "#competitions", "#quizzes", "#questions", "#run", "#table"];
+    var r;
+    if (selectedCompetition >= data.competitions.length) {
+        r = 2;
+    } else {
+        if (selectedQuiz >= data.competitions[selectedCompetition].quizzes.length) {
+            r = 3;
         } else {
-            alert("Ошибка: " + _data.message);
+            if (data.competitions[selectedCompetition].quizzes[selectedQuiz].questions.length == 0)
+                r = 4;
+            else
+                r = 6;
         }
-    });
+    }
 
-    $.getJSON("api/action.php?q=getValuers", function (_data) {
-        if (_data.status == "ok") {
-            var text = "";
-            for (var i = 0; i < _data.valuers.length; i++)
-                text += "<option>" + _data.valuers[i] + "</option>";
-            $("#quizValuer").html(text);
-            $("#quizValuer").val(data.competitions[selectedCompetition].quizzes[selectedQuiz].valuer);
-        } else {
-            alert("Ошибка: " + _data.message);
-        }
-    });
+    for (var i = 0; i < r; i++)
+        $(pages[i] + "Item").show();
+    for (var i = r; i < pages.length; i++)
+        $(pages[i] + "Item").hide();
 }
 
 function setPage(pagename) {
@@ -576,7 +579,60 @@ function loadAndDraw() {
             data = _data;
             draw();
         } else {
-            alert("Ошибка: " + _data.message);
+            innerAlert("Ошибка: ", _data.message, "danger");
         }
     });
+}
+
+function innerAlert(header, message = "", type = "success") {
+    var text = '<div class="row"> <div class="col-lg-12"> <br> <div class="alert alert-dismissible alert-' + type + '"> ' +
+        '<button type="button" class="close" onclick="$(\'#alertMessage\').fadeOut()">&times;</button> ' +
+        '<h4>' + header + '</h4> ' +
+        '<p>' + message + '</p> </div> </div></div>';
+    $("#alertMessage").html(text);
+    $("#alertMessage").fadeIn();
+
+    if (type == "success") {
+        setTimeout(function () {
+            $("#alertMessage").fadeOut();
+        }, 2000);
+    }
+}
+
+function onPlay() {
+    $("#mAudio1")[0].volume = 0.0;
+    $("#mAudio2")[0].volume = 0.0;
+    $("#mAudio1").animate({volume: 1.0}, 1000);
+    $("#mAudio2").animate({volume: 1.0}, 1000);
+    var timeStart = Number(data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].music_time.split("-")[0]);
+    var timeEnd = Number(data.competitions[selectedCompetition].quizzes[selectedQuiz].questions[selectedQuestion].music_time.split("-")[1]);
+    setTimeout(beforeStop, 1000 * (timeEnd - timeStart - 1.0));
+}
+
+function beforeStop() {
+    $("#mAudio1").animate({volume: 0.0}, 1000);
+    $("#mAudio2").animate({volume: 0.0}, 1000);
+}
+
+function filterPlayers() {
+    if (event.keyCode == 13) {
+        newTeam();
+        selectTeam(data.competitions[selectedCompetition].teams.length - 1);
+        $('#teamName').val('');
+        $('#teamName').focus()
+    } else {
+        var filter = $("#playersFilter").val();
+        var newMembersList = "";
+        for (var i = 0; i < data.players.length; i++)
+            if (filter.toLowerCase() == data.players[i].name.substr(0, filter.length).toLowerCase())
+                newMembersList += '<option onchange="addPlayerToTeam(' + data.players[i].id + ')">' + data.players[i].name + '</option>';
+        $("#newMembersList").html(newMembersList);
+    }
+}
+
+function focusOnFilter(event) {
+    if (event.keyCode != 13)
+        return;
+
+    $('#playersFilter').focus();
 }
