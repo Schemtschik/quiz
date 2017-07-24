@@ -25,7 +25,7 @@ function addPlayerToTeam() {
 }
 
 function saveAll() {
-    $.getJSON("api/action.php?q=save&data=" + $.toJSON(data), function (_data) {
+    $.post("api/action.php?q=save",{data:$.toJSON(data)} ,function (_data) {
         if (_data != "error") {
             loadAndDraw();
             innerAlert("Сохранено");
@@ -36,7 +36,7 @@ function saveAll() {
 }
 
 function saveCompetition(num) {
-    $.getJSON("api/action.php?q=save&competition=" + num + "&data=" + $.toJSON(data), function (_data) {
+    $.post("api/action.php?q=save&competition=" + num,{data:$.toJSON(data)} ,function (_data) {
         if (_data != "error") {
             loadAndDraw();
             innerAlert("Сохранено");
@@ -47,7 +47,7 @@ function saveCompetition(num) {
 }
 
 function saveQuiz(num) {
-    $.getJSON("api/action.php?q=save&competition=" + selectedCompetition + "&quiz=" + num + "&data=" + $.toJSON(data), function (_data) {
+    $.post("api/action.php?q=save&competition=" + selectedCompetition + "&quiz=" + num,{data:$.toJSON(data)} ,function (_data) {
         if (_data != "error") {
             loadAndDraw();
             innerAlert("Сохранено");
@@ -58,7 +58,7 @@ function saveQuiz(num) {
 }
 
 function saveQuestion(num) {
-    $.getJSON("api/action.php?q=save&competition=" + selectedCompetition + "&quiz=" + selectedQuiz + "&question=" + num + "&data=" + $.toJSON(data), function (_data) {
+    $.post("api/action.php?q=save&competition=" + selectedCompetition + "&quiz=" + selectedQuiz + "&question=" + num,{data:$.toJSON(data)} ,function (_data) {
         if (_data != "error") {
             loadAndDraw();
             innerAlert("Сохранено");

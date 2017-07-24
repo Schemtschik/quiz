@@ -30,7 +30,7 @@ function get() {
 
 function save() {
 
-    $data = json_decode($_GET['data']);
+    $data = json_decode($_POST['data']);
 
     if (isset($_GET['competition'])) {
         if (isset($_GET['quiz'])) {
