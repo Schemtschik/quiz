@@ -1,20 +1,18 @@
 <?php
+    session_start();
+
     if (isset($_POST['login']) && isset($_POST['password'])) {
-        if (file_exists("data/users/" . $_POST['login']) && file_get_contents("data/users/" . $_POST['login']) == hash('sha256', $_POST['password'])) {
+        if (file_exists("data/users/" . $_POST['login']) && file_get_contents("data/users/" . $_POST['login']) == hash('sha256', $_POST['password']) && !strpos($_POST['login'], '..') && !strpos($_POST['login'], '/')) {
             $error = false;
-            setcookie("login", $_POST['login']);
-            setcookie("password", hash('sha256', $_POST['password']));
-            echo "<script>location.href = 'index.php'</script>";
+            $_SESSION['login'] = $_POST['login'];
+            die("<script>location.href = 'index.php'</script>");
         } else {
             $error = true;
         }
     }
 
-    if (isset($_COOKIE['login']) && isset($_COOKIE['password'])) {
-        if (file_exists("data/users/" . $_COOKIE['login']) && file_get_contents("data/users/" . $_COOKIE['login']) == $_COOKIE['password']) {
-            echo "<script>location.href = 'index.php'</script>";
-        }
-    }
+    if (isset($_GET['logout']) && isset($_SESSION['login']))
+        unset($_SESSION['login']);
 ?>
 
 

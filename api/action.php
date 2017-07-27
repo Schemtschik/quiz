@@ -5,6 +5,13 @@
 
 error_reporting(E_ERROR);
 
+function my_file_get_contents($file) {
+    chmod($file, 0700);
+    $res = file_get_contents($file);
+    chmod($file, 0300);
+    return $res;
+}
+
 function get() {
     $res = json_decode("{}");
     $nextPlayer = 0;
@@ -14,11 +21,11 @@ function get() {
     $list = scandir("../data/competitions");
     foreach ($list as $i)
         if ($i != "." && $i != "..") {
-            $res->competitions[] = json_decode(file_get_contents('../data/competitions/'. $i . '/competition.json'));
+            $res->competitions[] = json_decode(my_file_get_contents('../data/competitions/'. $i . '/competition.json'));
             $nextCompetition = max($nextCompetition, (int)$i);
         }
 
-    $res->players = json_decode(file_get_contents("../data/players.json"));
+    $res->players = json_decode(my_file_get_contents("../data/players.json"));
     foreach ($res->players as $i)
         $nextPlayer = max($nextPlayer, (int)$i->id);
 
@@ -34,7 +41,7 @@ function save() {
 
     if (isset($_GET['competition'])) {
         if (isset($_GET['quiz'])) {
-            $competition = json_decode(file_get_contents("../data/competitions/" . $_GET['competition'] . "/competition.json"));
+            $competition = json_decode(my_file_get_contents("../data/competitions/" . $_GET['competition'] . "/competition.json"));
             if (isset($_GET['question'])) {
                 $competition->quizzes[$_GET['quiz']]->questions[$_GET['question']] = $data->competitions[$_GET['competition']]->quizzes[$_GET['quiz']]->questions[$_GET['question']];
             } else {
@@ -45,6 +52,7 @@ function save() {
             if (!file_exists("../data/competitions/" . $_GET['competition'] . "/competition.json")) {
                 mkdir("../data/competitions/" . $_GET['competition']);
                 mkdir("../data/competitions/" .  $_GET['competition'] . "/media");
+                chmod("../data/competitions/" .  $_GET['competition'] . "/media", 0770);
             }
             file_put_contents("../data/competitions/" . $_GET['competition'] . "/competition.json", json_encode($data->competitions[$_GET['competition']]));
         }
@@ -54,7 +62,7 @@ function save() {
         for ($i = 0; $i < count($data->competitions); $i++) {
             if (!file_exists("../data/competitions/" .$data->competitions[$i]->id  . "/competition.json")) {
                 mkdir("../data/competitions/" . $data->competitions[$i]->id);
-                mkdir("../data/competitions/" . $data->competitions[$i]->id . "/media");
+                mkdir("../data/competitions/" . $data->competitions[$i]->id . "/media");;
             }
             file_put_contents("../data/competitions/" . $data->competitions[$i]->id . "/competition.json", json_encode($data->competitions[$i]));
         }
@@ -75,7 +83,7 @@ function removeDirectory($dir) {
 function delete() {
     if (isset($_GET['competition'])) {
         if (isset($_GET['quiz'])) {
-            $competition = json_decode(file_get_contents("../data/competitions/" . $_GET['competition'] . "/competition.json"));
+            $competition = json_decode(my_file_get_contents("../data/competitions/" . $_GET['competition'] . "/competition.json"));
             if (isset($_GET['question'])) {
                 array_splice($competition->quizzes[$_GET['quiz']]->questions, $_GET['question'], 1);
             } else {
@@ -120,7 +128,7 @@ function addAnswer() {
         throw new Exception("No arguments");
 
     $filename = "../data/competitions/" . $_GET['competition'] . "/results.json";
-    $results = (file_exists($filename) ? json_decode(file_get_contents($filename)) : array());
+    $results = (file_exists($filename) ? json_decode(my_file_get_contents($filename)) : array());
     for ($i = 0; $i <= (int)$_GET['quiz']; $i++)
         if (!isset($results[$i]))
             $results[$i] = array();
@@ -135,7 +143,7 @@ function getResults() {
     if (!isset($_GET['competition']))
         throw new Exception("No arguments");
     $filename = "../data/competitions/" . $_GET['competition'] . "/results.json";
-    die(file_exists($filename) ? file_get_contents($filename) : "[]");
+    die(file_exists($filename) ? my_file_get_contents($filename) : "[]");
 }
 
 function getTable() {
@@ -143,8 +151,8 @@ function getTable() {
         throw new Exception("No arguments");
 
     $filename = "../data/competitions/" . $_GET['competition'] . "/results.json";
-    $results = json_decode(file_exists($filename) ? file_get_contents($filename) : "[]");
-    $competition = json_decode(file_get_contents("../data/competitions/" . $_GET['competition'] . "/competition.json"));
+    $results = json_decode(file_exists($filename) ? my_file_get_contents($filename) : "[]");
+    $competition = json_decode(my_file_get_contents("../data/competitions/" . $_GET['competition'] . "/competition.json"));
 
     $scores = array();
     foreach ($competition->quizzes as $quiz) {
@@ -184,6 +192,12 @@ function getTable() {
 
 $publicMethods = array("get", "save", "delete", "getFiles", "getValuers", "addAnswer", "getResults", "getTable");
 
+
+session_start();
+
+if (!isset($_SESSION['login']))
+    die('{"status":"error", "message":"Permission denied"}');
+
 if (isset($_GET['q'])) {
     $q = $_GET['q'];
 
@@ -198,7 +212,7 @@ if (isset($_GET['q'])) {
     }
     echo '{"status":"ok"}';
 } else {
-    echo '{"status":"error", "message":"Empty method"}';
+    echo '{"status":"error", "message":"Permission denied"}';
 }
 
 

@@ -1,13 +1,7 @@
 <?php
-    if (isset($_COOKIE['login']) && isset($_COOKIE['password'])) {
-        if (file_exists("data/users/" . $_COOKIE['login']) && file_get_contents("data/users/" . $_COOKIE['login']) == $_COOKIE['password']) {
-
-        } else {
-            echo "<script>location.href = 'login.php'</script>";
-        }
-    } else {
-        echo "<script>location.href = 'login.php'</script>";
-    }
+    session_start();
+    if (!isset($_SESSION['login']))
+        die("<script>location.href = 'login.php'</script>");
 ?>
 
 
@@ -50,7 +44,7 @@
               <form class="navbar-form navbar-left" role="search">
                 <div type="submit" class="btn btn-default" onclick="saveAll()">Сохранить всё</div>
                   <div type="submit" class="btn btn-default" onclick="loadAndDraw()">Перезагрузить всё</div>
-                  <div type="submit" class="btn btn-default" onclick='document.cookie = "password=; expires=-1"; location.href = "login.php";'>Выйти</div>
+                  <div type="submit" class="btn btn-default" onclick='location.href = "login.php?logout=true";'>Выйти</div>
               </form>
           </div>
       </div>
@@ -414,7 +408,7 @@
       var s = window.location.href.split("#")[1];
       setPage((s == null || s == "") ? "competitions" : s);
       loadAndDraw();
-      setInterval(drawResults, 500);
+      setInterval(drawResults, 10000);
   </script>
 
   </body>

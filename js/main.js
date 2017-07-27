@@ -24,7 +24,20 @@ function addPlayerToTeam() {
     draw();
 }
 
+function checkData() {
+	var s = $.toJSON(data);
+	for (var i = 0; i < s.length; i++)
+		if (s[i] == '<' || s[i] == '>')
+			return false;
+	return true;
+}
+
 function saveAll() {
+	if (!checkData()) {
+		innerAlert("Ошибка", "Использованы недопустимые символы", "danger");
+		return;
+	}
+
     $.post("api/action.php?q=save",{data:$.toJSON(data)} ,function (_data) {
         if (_data != "error") {
             loadAndDraw();
@@ -36,6 +49,11 @@ function saveAll() {
 }
 
 function saveCompetition(num) {
+	if (!checkData()) {
+		innerAlert("Ошибка", "Использованы недопустимые символы", "danger");
+		return;
+	}
+
     $.post("api/action.php?q=save&competition=" + num,{data:$.toJSON(data)} ,function (_data) {
         if (_data != "error") {
             loadAndDraw();
@@ -47,6 +65,11 @@ function saveCompetition(num) {
 }
 
 function saveQuiz(num) {
+	if (!checkData()) {
+		innerAlert("Ошибка", "Использованы недопустимые символы", "danger");
+		return;
+	}
+
     $.post("api/action.php?q=save&competition=" + selectedCompetition + "&quiz=" + num,{data:$.toJSON(data)} ,function (_data) {
         if (_data != "error") {
             loadAndDraw();
@@ -58,6 +81,11 @@ function saveQuiz(num) {
 }
 
 function saveQuestion(num) {
+	if (!checkData()) {
+		innerAlert("Ошибка", "Использованы недопустимые символы", "danger");
+		return;
+	}
+
     $.post("api/action.php?q=save&competition=" + selectedCompetition + "&quiz=" + selectedQuiz + "&question=" + num,{data:$.toJSON(data)} ,function (_data) {
         if (_data != "error") {
             loadAndDraw();
@@ -380,7 +408,7 @@ function draw() {
     for (var i = 0; i < data.competitions.length; i++) {
         var competition = data.competitions[i];
         competitionsList += '<div style="cursor: pointer" class="list-group-item' + (selectedCompetition == i ? " active" : "") + '" onclick="selectCompetition(' + i + ')">';
-        competitionsList += '<h4 class="list-group-item-heading">' + competition.name + '</h4>';
+        competitionsList += '<h4 class="list-group-item-heading">' + competition.id + '.' + competition.name + '</h4>';
         competitionsList += '<p class="list-group-item-text">' + competition.description + '</p>';
         competitionsList += '<br><div type="submit" class="btn btn-success" onclick="saveCompetition(' + data.competitions[i].id + ')">Сохранить</div> ';
         competitionsList += '<div type="submit" class="btn btn-danger" onclick="deleteCompetition(' + data.competitions[i].id + ')">Удалить</div></div>';
